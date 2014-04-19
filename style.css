@@ -1,5 +1,128 @@
 body {
-  background: #000;
-  color: #ccc;
+  background: #009984;
+  color: #FFF;
   font-family: "Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-weight: 300;
+  font-size: 14px;
 }
+
+#left-container {
+  float: left;
+  width: 25%;
+}
+
+#right-container {
+  float: left;
+  width: 75%;
+}
+
+#right-container #calendar-viz-tier {
+  float: left;
+  width: 5%;
+  width: 20px;
+}
+
+#right-container #calendar-viz {
+  float: left;
+  width: 95%;
+  width: calc( 100% - 20px);
+}
+
+/* Viz ============================= */
+
+#calendar-viz,
+#calendar-viz-tier {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#calendar-viz thead,
+#calendar-viz-tier thead {
+  color: #000;
+}
+
+#calendar-viz tr,
+#calendar-viz-tier tr {
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  height: 22px;
+}
+
+#calendar-viz-tier td {
+  color: #009984;
+  background: #BADB81;
+  border-bottom: 4px solid #009984;
+}
+
+#calendar-viz tbody tr:hover {
+  background: #3EAF83;
+  cursor: pointer;
+}
+
+#calendar-viz td,
+#calendar-viz-tier td {
+  text-align: center;
+}
+
+#calendar-viz td.month {
+  width: 40px;
+}
+
+#calendar-viz tbody td.marked .dot {
+  background: #F9F281;
+  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+  margin: 0 auto;
+}
+
+#calendar-viz thead th:nth-child(14),
+#calendar-viz tbody td:nth-child(14) {
+  text-align: left;
+  padding-left: 15px;
+}
+
+#calendar-viz tr.tier-divider {
+  border-bottom: 1px dashed #016658;
+}
+
+#calendar-viz tbody tr.selected {
+  background: rgba(255,255,255,0.2);
+}
+
+
+/* Description box ============================= */
+
+#description-box {
+  border: 1px solid #FFF;
+  background: rgba(255,255,255,0.2);
+  padding: 10px 15px;
+  height: 500px;
+  margin-top: 22px;
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+#description-box header {
+  font-size: 25px;
+  margin-bottom: 15px;
+}
+
+#event-details {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+#event-details li {
+  margin-bottom: 5px;
+}
+
+#event-details .label {
+  text-transform: capitalize;
+  font-weight: 800;
+  margin-right: 10px;
+}
+
+#event-details .label::after {
+  content: ":";
+};
