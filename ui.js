@@ -1,6 +1,6 @@
 var public_spreadsheet_url = "https://docs.google.com/spreadsheets/d/1M8L-O9UQC0CbRMbKtTsfyYKBqJZekkpbA9VE8CQ20cY/pubhtml";
 
-// TODO: create edEvent object
+// FIXME: create edEvent object
 
 var monthAbbr = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
 
@@ -17,8 +17,7 @@ var columnNames = {
 };
 
 
-var useMe = "http://spreadsheets.google.com/feeds/list/1M8L-O9UQC0CbRMbKtTsfyYKBqJZekkpbA9VE8CQ20cY/od6/public/values?alt=json";
-var useMe2 = "http://spreadsheets.google.com/feeds/list/1M8L-O9UQC0CbRMbKtTsfyYKBqJZekkpbA9VE8CQ20cY/0/public/basic?alt=json&callback=myFunc";
+var sourceUrl = "http://spreadsheets.google.com/feeds/list/1M8L-O9UQC0CbRMbKtTsfyYKBqJZekkpbA9VE8CQ20cY/od6/public/values?alt=json";
 
 var spreadsheetData = {};
 var vizAllEvents = [];
@@ -34,21 +33,16 @@ var vizEventsByTier = {
 var viz = $("#calendar-viz");
 var vizTier = $("#calendar-viz-tier");
 
-$.getJSON(useMe, function(data) {
+$.getJSON(sourceUrl, function(data) {
   spreadsheetData = data;
-  // console.log(spreadsheetData);
-  // console.log(data.feed.entry[5].content['$t']);
-  //first row "event" column
-  // console.log(data.feed.entry[0]['gsx$event']['$t']);
   mapGData(spreadsheetData);
-
 });
 
 function mapGData(data) {
   var gEvents = data.feed.entry;
   gEvents.forEach(function(gEvent){
     var vizEvent = {};
-    // make sure things are using the right type
+    // FIXME: make sure things are using the right type
     vizEvent["id"] = vizAllEvents.length + 1; // assign real id for future reference, starts from 1
     vizEvent["tempId"] = gEvent[ columnNames.tempId ][dataKey];
     vizEvent["eventName"] = gEvent[ columnNames.eventName ][dataKey];
@@ -58,10 +52,7 @@ function mapGData(data) {
     vizEvent["endDate"] = new Date( gEvent[ columnNames.endDate ][dataKey] );
     vizAllEvents.push(vizEvent);
     vizEventsByTier[vizEvent["tier"]].push( vizEvent );
-    console.log("=====");
-    // drawRow(vizEvent);
   });
-  console.log(vizAllEvents);
   buildTable();
 }
 
@@ -127,8 +118,6 @@ function drawRow(theEvent, tier) {
 }
 
 function drawTierLabel(tier,tierGroup) {
-  console.log( tier );
-  console.log(tierGroup.length);
   viz.find("tr[data-tier="+ tier +"]").prepend("<td class='tierLabel'>"+tier+"</td>");
   viz.find("tr[data-tier="+ tier +"]:last").addClass("tier-divider");
 }
@@ -145,13 +134,24 @@ function addEventHandler() {
     viz.find("tr[data-id].selected").removeClass("selected");
     // get currently selected Event
     var id = $(this).parents("tr[data-id]").addClass("selected").attr("data-id");
-    var eventSelected = vizAllEvents[(id-1)];
+    var selected = vizAllEvents[(id-1)];
     // update content
-    $("#event-title").text(eventSelected.eventName);
-    for( key in eventSelected ) {
-      $("#event-details").append( "<li>" +
-                                     "<b class='label'>" + key + "</b>" + eventSelected[key] +
-                                  "</li>");
+    $("#event-title").text(selected.eventName);
+    for( key in selected ) {
+      var listItem = "";
+      if ( key == "channel") {
+        listItem += "<li><b class='label'>" + key + "</b><br />";
+        var channels = selected[key].split(",");
+        for (var i=0; i<channels.length; i++) {
+          listItem += channels[i] + "</ br>";
+        }
+        listItem += "</li>";
+      } else {
+        listItem =  "<li>" +
+                     "<b class='label'>" + key + "</b>" + selected[key] +
+                    "</li>";
+      }
+      $("#event-details").append(listItem);
     }
   });
 }

@@ -56,7 +56,6 @@ body {
 
 #calendar-viz tbody tr:hover {
   background: #3EAF83;
-  cursor: pointer;
 }
 
 #calendar-viz td,
@@ -74,6 +73,10 @@ body {
   width: 12px;
   height: 12px;
   margin: 0 auto;
+}
+
+#calendar-viz tbody td.marked .dot:hover {
+  cursor: pointer;
 }
 
 #calendar-viz thead th:nth-child(14),
