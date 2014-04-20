@@ -33,9 +33,22 @@ var vizEventsByTier = {
 var viz = $("#calendar-viz");
 var vizTier = $("#calendar-viz-tier");
 
-$.getJSON(sourceUrl, function(data) {
-  spreadsheetData = data;
-  mapGData(spreadsheetData);
+$.ajax({
+  url: sourceUrl,
+  jsonpCallback: 'jsonCallback',
+  contentType: "application/json",
+  dataType: 'jsonp',
+  error: function(jqXHR, textStatus, errorThrown) {
+    console.log("Fail to load Google spreadsheet data...");
+    console.log(jqXHR);
+  },
+  success: function(data) {
+    spreadsheetData = data;
+    mapGData(spreadsheetData);
+  },
+  complete: function() {
+    console.log("Finish loading spreadsheet data!");
+  }
 });
 
 function mapGData(data) {
