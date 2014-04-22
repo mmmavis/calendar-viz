@@ -1,12 +1,6 @@
-var public_spreadsheet_url = "https://docs.google.com/spreadsheets/d/1M8L-O9UQC0CbRMbKtTsfyYKBqJZekkpbA9VE8CQ20cY/pubhtml";
-
-// FIXME: create edEvent object
-
-var monthAbbr = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
-
 // will have to put this in .env so it makes updating easier
 var colKeyPrefix = "gsx$";
-var dataKey = "$t";
+var gDataKey = "$t";
 var columnNames = {
   tempId: colKeyPrefix + "tempid",
   eventName: colKeyPrefix + "event",
@@ -18,7 +12,6 @@ var columnNames = {
 
 
 var sourceUrl = "http://spreadsheets.google.com/feeds/list/1M8L-O9UQC0CbRMbKtTsfyYKBqJZekkpbA9VE8CQ20cY/od6/public/values?alt=json";
-
 var spreadsheetData = {};
 var vizAllEvents = [];
 var vizEventsByTier = {
@@ -28,10 +21,22 @@ var vizEventsByTier = {
     3: [],
     4: []
 };
-
+var monthAbbr = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
 
 var viz = $("#calendar-viz");
 var vizTier = $("#calendar-viz-tier");
+
+function VizEvent(gEvent) {
+  // FIXME: make sure things are using the right type
+  this["id"] = vizAllEvents.length + 1; // assign real id for future reference, starts from 1
+  for ( key in columnNames ) {
+    var gColumnKey = columnNames[key];
+    this[key] = gEvent[gColumnKey][gDataKey];
+    if ( key == "startDate" || key == "endDate") {
+      this[key] = new Date( gEvent[gColumnKey][gDataKey] );
+    }
+  }
+}
 
 $.ajax({
   url: sourceUrl,
@@ -51,18 +56,11 @@ $.ajax({
   }
 });
 
+
 function mapGData(data) {
   var gEvents = data.feed.entry;
   gEvents.forEach(function(gEvent){
-    var vizEvent = {};
-    // FIXME: make sure things are using the right type
-    vizEvent["id"] = vizAllEvents.length + 1; // assign real id for future reference, starts from 1
-    vizEvent["tempId"] = gEvent[ columnNames.tempId ][dataKey];
-    vizEvent["eventName"] = gEvent[ columnNames.eventName ][dataKey];
-    vizEvent["tier"] = gEvent[ columnNames.tier ][dataKey]; // parseInt?
-    vizEvent["channel"] = gEvent[ columnNames.channel ][dataKey];
-    vizEvent["startDate"] = new Date( gEvent[ columnNames.startDate ][dataKey] );
-    vizEvent["endDate"] = new Date( gEvent[ columnNames.endDate ][dataKey] );
+    var vizEvent = new VizEvent(gEvent);
     vizAllEvents.push(vizEvent);
     vizEventsByTier[vizEvent["tier"]].push( vizEvent );
   });
@@ -77,7 +75,8 @@ function buildTable() {
     tierGroup.forEach(function(theEvent){
       drawRow(theEvent, tier);
     });
-    drawTierLabel(tier, tierGroup);
+    viz.find("tr[data-tier="+ tier +"]:last").addClass("tier-divider");
+    drawTierLabel(tier, tierGroup); // FIXME: to be deleted
     drawTierTable(tier, tierGroup);
   }
   addEventHandler();
@@ -85,10 +84,14 @@ function buildTable() {
 
 function drawTierTable(tier,tierGroup) {
   tierGroup.forEach(function(theEvent, i){
+    var trOpen = "<tr data-tier="+ tier +">";
+    var trClose = "</tr>";
     if ( i == 0 ) {
-      vizTier.find("tbody").append("<tr><td rowspan=" + tierGroup.length + ">" + tier + "</td></tr>");
+      vizTier.find("tbody").append(trOpen +
+                                      "<td class='tier-label' rowspan=" + tierGroup.length + " data-rowspan='"+ tierGroup.length +"'>" + tier + "</td>" +
+                                   trClose);
     }else {
-      vizTier.find("tbody").append("<tr></tr>");
+      vizTier.find("tbody").append(trOpen + trClose);
     }
   });
 }
@@ -132,7 +135,6 @@ function drawRow(theEvent, tier) {
 
 function drawTierLabel(tier,tierGroup) {
   viz.find("tr[data-tier="+ tier +"]").prepend("<td class='tierLabel'>"+tier+"</td>");
-  viz.find("tr[data-tier="+ tier +"]:last").addClass("tier-divider");
 }
 
 
@@ -141,31 +143,51 @@ function drawTierLabel(tier,tierGroup) {
 
 function addEventHandler() {
   // show Event description
-  $(".dot").click(function(event){
-    // reset previously selected
-    $("#description-box #event-details").html("");
-    viz.find("tr[data-id].selected").removeClass("selected");
-    // get currently selected Event
-    var id = $(this).parents("tr[data-id]").addClass("selected").attr("data-id");
-    var selected = vizAllEvents[(id-1)];
-    // update content
-    $("#event-title").text(selected.eventName);
-    for( key in selected ) {
-      var listItem = "";
-      if ( key == "channel") {
-        listItem += "<li><b class='label'>" + key + "</b><br />";
-        var channels = selected[key].split(",");
-        for (var i=0; i<channels.length; i++) {
-          listItem += channels[i] + "</ br>";
-        }
-        listItem += "</li>";
-      } else {
-        listItem =  "<li>" +
-                     "<b class='label'>" + key + "</b>" + selected[key] +
-                    "</li>";
-      }
-      $("#event-details").append(listItem);
-    }
-  });
+  $(".dot").click(showDetails);
+  // toggle each Tier section
+  vizTier.find("td").click(toggleTier);
 }
 
+// Show Event description click handler
+function showDetails(event) {
+  $("#description-box #event-details").html("");
+  viz.find("tr[data-id].selected").removeClass("selected");
+  // get currently selected Event
+  var id = $(this).parents("tr[data-id]").addClass("selected").attr("data-id");
+  var selected = vizAllEvents[(id-1)];
+  // update content
+  $("#event-title").text(selected.eventName);
+  for( key in selected ) {
+    var listItem = "";
+    if ( key == "channel") {
+      listItem += "<li><b class='label'>" + key + "</b><br />";
+      var channels = selected[key].split(",");
+      for (var i=0; i<channels.length; i++) {
+        listItem += channels[i] + "</ br>";
+      }
+      listItem += "</li>";
+    } else {
+      listItem =  "<li>" +
+                   "<b class='label'>" + key + "</b>" + selected[key] +
+                  "</li>";
+    }
+    $("#event-details").append(listItem);
+  }
+}
+
+// Toggle Tier click handler
+function toggleTier(event) {
+  var tier = $(event.target).parents("tr[data-tier]").attr("data-tier");
+  // main viz
+  viz.find("tr[data-tier="+ tier +"]:not(:last)").toggle();
+  viz.find("tr[data-tier="+ tier +"]:last *").toggle();
+  // tier table viz ("vertical header")
+  var tierLabelRow = vizTier.find("tr[data-tier="+ tier +"]:first").toggleClass("collapsed");
+  var actualRowSpan = tierLabelRow.find("td").attr("data-rowspan");
+  vizTier.find("tr[data-tier="+ tier +"]:not(:first)").toggle();
+  if ( tierLabelRow.hasClass("collapsed") ) {
+    tierLabelRow.find("td").attr("rowspan", 1);
+  }else {
+    tierLabelRow.find("td").attr("rowspan", actualRowSpan);
+  }
+}

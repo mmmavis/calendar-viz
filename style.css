@@ -28,6 +28,10 @@ body {
   width: calc( 100% - 20px);
 }
 
+.hidden{
+  display: none;
+}
+
 /* Viz ============================= */
 
 #calendar-viz,
@@ -51,7 +55,12 @@ body {
 #calendar-viz-tier td {
   color: #009984;
   background: #BADB81;
-  border-bottom: 4px solid #009984;
+  border-bottom: 1px solid #009984;
+  font-weight: bold;
+}
+
+#calendar-viz-tier tr:hover {
+  cursor: pointer;
 }
 
 #calendar-viz tbody tr:hover {
@@ -100,7 +109,7 @@ body {
   border: 1px solid #FFF;
   background: rgba(255,255,255,0.2);
   padding: 10px 15px;
-  height: 500px;
+  height: 400px;
   margin-top: 22px;
   margin-left: 20px;
   margin-right: 20px;

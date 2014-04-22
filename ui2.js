@@ -1,5 +1,3 @@
-var public_spreadsheet_url = "https://docs.google.com/spreadsheets/d/1M8L-O9UQC0CbRMbKtTsfyYKBqJZekkpbA9VE8CQ20cY/pubhtml";
-
 // https://spreadsheets.google.com/feeds/list/1M8L-O9UQC0CbRMbKtTsfyYKBqJZekkpbA9VE8CQ20cY/od6/public/values?alt=json-in-script&callback=x
 
 
